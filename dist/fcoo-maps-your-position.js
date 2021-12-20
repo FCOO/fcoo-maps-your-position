@@ -78,7 +78,9 @@ Extend L.Map with methods to get the location of the device
 
 
 
-//    function error(error){
+    function error(error){
+
+        window.notyError(error.code);
 //HER switch(error.code) {
 //HER    case error.PERMISSION_DENIED:
 //HER      x.innerHTML = "User denied the request for Geolocation."
@@ -95,7 +97,7 @@ Extend L.Map with methods to get the location of the device
 
         //console.log('error', error.PERMISSION_DENIED, error);
 
-//    }
+    }
 
 
     var geolocationOptions = {
@@ -156,7 +158,7 @@ Extend L.Map with methods to get the location of the device
     }
 
     if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(niels, null/*error*/, geolocationOptions);
+        navigator.geolocation.watchPosition(niels, error, geolocationOptions);
 //HER        navigator.geolocation.getCurrentPosition(niels, error, geolocationOptions);
 //HER        navigator.geolocation.getCurrentPosition(niels, error, geolocationOptions);
 
