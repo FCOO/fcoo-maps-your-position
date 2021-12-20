@@ -143,8 +143,12 @@ Extend L.Map with methods to get the location of the device
 
     */
 
-
+var timestamp = 0;
     function niels( geolocationPosition ){
+        if (timestamp == geolocationPosition.timestamp) return;
+
+        timestamp = geolocationPosition.timestamp;
+
         var c = geolocationPosition.coords;
         window.notyInfo(
             'latitude:'+c.latitude+'<br>'+
