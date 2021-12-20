@@ -157,7 +157,8 @@ var timestamp = 0;
             'accuracy:'+c.accuracy+'<br>'+
             'altitudeAccuracy:'+c.altitudeAccuracy+'<br>'+
             'heading:'+c.heading+'<br>'+
-            'speed:'+c.speed
+            'speed:'+c.speed,
+            {killer: true}
         );
     }
 
