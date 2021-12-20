@@ -7,17 +7,17 @@
     https://github.com/FCOO
 
 ****************************************************************************/
-(function ($, L, window, document, undefined) {
+(function ($, L, window/*, document, undefined*/) {
     "use strict";
 
     //Create namespaces
     var ns = window.fcoo = window.fcoo || {},
-        nsMap = ns.map = ns.map || {},
+        nsMap = ns.map = ns.map || {}/*,
 
         defaultOptions = {
 
 
-        };
+        }*/;
 
     //createMapLayer = {MAPLAYER_ID: CREATE_MAPLAYER_AND_MENU_FUNCTION} See fcoo-maps/src/map-layer_00.js for description
     nsMap.createMapLayer = nsMap.createMapLayer || {};
@@ -38,7 +38,7 @@
 
     MapLayer_YourPosition.prototype = Object.create(nsMap.MapLayer.prototype); //OR = Object.create(nsMap.MapLayer_ANOTHER.prototype);
 
-    MapLayer_YourPosition.prototype.createLayer = function(options){
+    MapLayer_YourPosition.prototype.createLayer = function( /*options*/ ){
         //return new L.SOME_LAYER_CONSTRUCTOR(null, options); //<- TODO
     };
 
@@ -54,7 +54,7 @@
 
                 //Original function/method
                 METHOD.apply(this, arguments);
-            }
+            };
         } (nsMap.MapLayer.prototype.METHOD),
 
 
@@ -69,6 +69,7 @@
     /***********************************************************
     Add MapLayer_YourPosition to createMapLayer
     ***********************************************************/
+/*
     nsMap.createMapLayer["YOUR_POSITION"] = function(options, addMenu){
 
         //adjust default options with options into mapLayerOptions
@@ -77,7 +78,7 @@
 
         addMenu( mapLayer.menuItemOptions() ); //OR list of menu-items
     };
-
+*/
 
 
 }(jQuery, L, this, document));
