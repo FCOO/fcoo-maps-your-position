@@ -40,17 +40,20 @@
 
 
 setTimeout(function(){
-//HER    L.control.locate({
-//HER        position: 'topright',
-//HER        locateOptions: {
-//HER                maxZoom: Infinity,
-//HER                watch  : true,    // if you overwrite this, visualization cannot be updated
-//HER                setView: false    // have to set this to false because we have to do setView manually
-//HER            }
-//HER    }).addTo(fcoo.map.mainMap);
+    L.control.locate({
+        position: 'topright',
+            showCompass: true,
+                
+        locateOptions: {
+                maxZoom: Infinity,
+                watch  : true,    // if you overwrite this, visualization cannot be updated
+                setView: false    // have to set this to false because we have to do setView manually
+            }
+    }).addTo(fcoo.map.mainMap);
+
 fcoo.map.mainMap.on('locationfound', function( e ){
         window.notyInfo(
-            'VERSION: 0.0.7<br>'+
+            'VERSION: 0.0.8<br>'+
             'latitude:'+e.latlng.lat+'<br>'+
             'longitude:'+e.latlng.lng+'<br>'+
             'altitude:'+e.altitude+'<br>'+
