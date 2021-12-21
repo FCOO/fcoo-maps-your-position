@@ -148,6 +148,8 @@ Extend L.Map with methods to get the location of the device
 
 var timestamp = 0;
     function niels( geolocationPosition ){
+
+console.log(geolocationPosition);
         if (timestamp == geolocationPosition.timestamp) return;
 
         timestamp = geolocationPosition.timestamp;
@@ -167,7 +169,8 @@ var timestamp = 0;
     }
 
     if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(niels, error, geolocationOptions);
+//HER        navigator.geolocation.watchPosition(niels, error, geolocationOptions);
+
 //HER        navigator.geolocation.getCurrentPosition(niels, error, geolocationOptions);
 //HER        navigator.geolocation.getCurrentPosition(niels, error, geolocationOptions);
 
