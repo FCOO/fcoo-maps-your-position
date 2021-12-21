@@ -156,14 +156,14 @@ console.log(geolocationPosition);
 
         var c = geolocationPosition.coords;
         window.notyInfo(
-            'VERSION: 0.0.9<br>'+
+            'VERSION: 0.0.10<br>'+
             'latitude:'+c.latitude+'<br>'+
             'longitude:'+c.longitude+'<br>'+
             'altitude:'+c.altitude+'<br>'+
             'accuracy:'+c.accuracy+'<br>'+
             'altitudeAccuracy:'+c.altitudeAccuracy+'<br>'+
             'heading:'+c.heading+'<br>'+
-            'speed:'+c.speed,
+            'speed:'+c.speed+'<br>'+
             'window.deviceOrientation:'+window.deviceOrientation,
             {killer: true}
         );
