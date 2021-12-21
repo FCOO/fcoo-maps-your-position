@@ -119,7 +119,10 @@ Extend L.Map with methods to get the location of the device
         */
 
         maximumAge          : 10 * 1000, //Allow 10sec old position
-        enableHighAccuracy  : true
+
+        timeout             : 10 * 1000,
+
+        enableHighAccuracy  : false
     };
 
     /*
@@ -151,6 +154,7 @@ var timestamp = 0;
 
         var c = geolocationPosition.coords;
         window.notyInfo(
+            'VERSION: 0.6<br>'+
             'latitude:'+c.latitude+'<br>'+
             'longitude:'+c.longitude+'<br>'+
             'altitude:'+c.altitude+'<br>'+
