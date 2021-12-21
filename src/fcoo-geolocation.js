@@ -156,7 +156,7 @@ console.log(geolocationPosition);
 
         var c = geolocationPosition.coords;
         window.notyInfo(
-            'VERSION: 0.6<br>'+
+            'VERSION: 0.0.9<br>'+
             'latitude:'+c.latitude+'<br>'+
             'longitude:'+c.longitude+'<br>'+
             'altitude:'+c.altitude+'<br>'+
@@ -164,12 +164,13 @@ console.log(geolocationPosition);
             'altitudeAccuracy:'+c.altitudeAccuracy+'<br>'+
             'heading:'+c.heading+'<br>'+
             'speed:'+c.speed,
+            'window.deviceOrientation:'+window.deviceOrientation,
             {killer: true}
         );
     }
 
     if (navigator.geolocation) {
-//HER        navigator.geolocation.watchPosition(niels, error, geolocationOptions);
+        navigator.geolocation.watchPosition(niels, error, geolocationOptions);
 
 //HER        navigator.geolocation.getCurrentPosition(niels, error, geolocationOptions);
 //HER        navigator.geolocation.getCurrentPosition(niels, error, geolocationOptions);
@@ -258,6 +259,9 @@ enableHighAccuracy	Boolean	false	Enables high accuracy, see description in the W
 
         if (deviceOrientation !== null)
             ns.events.fire('DEVICEORIENTATION', deviceOrientation);
+
+        window.deviceOrientation = deviceOrientation;
+
     }
 
     //Set correct event
