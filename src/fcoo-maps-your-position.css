@@ -1,5 +1,5 @@
 /***********************************************
-    fcoo-maps-your-position.scss, 
+    fcoo-maps-your-position.scss,
 
     (c) 2021, FCOO
 
@@ -8,3 +8,14 @@
 
 
 ************************************************/
+.geolocation .hide-for-geolocation {
+  display: none !important; }
+
+.no-geolocation .show-for-geolocation {
+  display: none !important; }
+
+.geolocation-direction .hide-for-geolocation-direction {
+  display: none !important; }
+
+.no-geolocation-direction .show-for-geolocation-direction {
+  display: none !important; }

@@ -1,5 +1,5 @@
 /***********************************************
-    fcoo-maps-your-position.scss, 
+    fcoo-maps-your-position.scss,
 
     (c) 2021, FCOO
 
@@ -17,3 +17,11 @@
 //MATHSASS - https://github.com/terkel/mathsass
 @import "../bower_components/mathsass/dist/math";
 
+
+
+//MODERNIZR-SCSS - https://github.com/FCOO/modernizr-scss
+@import "../bower_components/modernizr-scss/dist/modernizr-scss";
+
+
+@include show-and-hide-for-modernizr-test($modernizr-test: 'geolocation',           $incl-no-selector: false, $incl-table-display: false);
+@include show-and-hide-for-modernizr-test($modernizr-test: 'geolocation-direction', $incl-no-selector: false, $incl-table-display: false);

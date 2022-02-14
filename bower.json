@@ -1,6 +1,6 @@
 {
   "name": "fcoo-maps-your-position",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "homepage": "https://github.com/FCOO/fcoo-maps-your-position",
   "authors": [
     "Niels Holt"
@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "fcoo-maps": "fcoo/fcoo-maps#latest",
-    "leaflet.locatecontrol": "domoritz/leaflet-locatecontrol#^0.76.0"
+    "fcoo-maps-marker": "fcoo/fcoo-maps-marker#latest",
+    "geolocation": "fcoo/geolocation#^1.1.2"
   },
   "devDependencies": {
     "bourbon": "latest",

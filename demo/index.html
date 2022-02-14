@@ -22,7 +22,6 @@
 
     <script src="bower_components.js"></script>
     <script src="../src/fcoo-maps-your-position.js"></script>
-    <script src="../src/fcoo-geolocation.js"></script>
 
     <script>
         window.fcoo.map.createApplication(
@@ -33,48 +32,8 @@
             },
 
             //layerMenu
-            //["YOUR_POSITION"]
+            ["YOUR_POSITION"]
         );
-
-        
-
-
-setTimeout(function(){
-    L.control.locate({
-        position: 'topright',
-            showCompass: true,
-                
-        locateOptions: {
-                maxZoom: Infinity,
-                watch  : true,    // if you overwrite this, visualization cannot be updated
-                setView: false    // have to set this to false because we have to do setView manually
-            }
-    }).addTo(fcoo.map.mainMap);
-
-fcoo.map.mainMap.on('locationfound', function( e ){
-return;
-        window.notyInfo(
-            'VERSION: 0.0.8<br>'+
-            'latitude:'+e.latlng.lat+'<br>'+
-            'longitude:'+e.latlng.lng+'<br>'+
-            'altitude:'+e.altitude+'<br>'+
-            'accuracy:'+e.accuracy+'<br>'+
-            'altitudeAccuracy:'+e.altitudeAccuracy+'<br>'+
-            'heading:'+e.heading+'<br>'+
-            'speed:'+e.speed,
-            {killer: true}
-        );
-
-    console.log('locationfound', e );
-});
-
-//HER    fcoo.map.mainMap.locate({
-//HER        maxZoom: Infinity,
-//HER        watch  : true,    
-//HER        setView: false    
-//HER    });
-
-}, 2000);
 
     </script>
 </body>
