@@ -12,9 +12,10 @@
         var header_text = {da:'Din placering', en:'Your position'};
         function showGeolocationWarning(){
             window.notyInfo({
-                da: 'Din placering kan ikke vises. Det kan skyldes, at<br><ul>' +
-                        '<li>Første grund kdjldfj lsd jlsd  lsdkfj sldfkj sdlfk j</li>' +
-                        '<li>ANden grund dsfglj lsdj lsdj l sdflk lldskfjg ksd flgk sdlfk </li>' +
+                da: 'Din placering kan ikke vises. Det kan skyldes at,<br><ul>' +
+                        '<li>siden ikke har tilladelse til at vise placering</li>' +
+                        '<li>din mobil/tablet/computer ikke kan bestemme placering</li>' +
+                        '<li>siden ikke tilgås via <em>https</em></li>' +
                     '</ul>',
 
                 en: 'Your location can\'t be displayed. Possible reasons:<br><ul>' +
@@ -33,39 +34,77 @@
 
     //Create namespaces
     var ns = window.fcoo = window.fcoo || {},
-        nsMap = ns.map = ns.map || {},
+        nsMap = ns.map = ns.map || {};
 
-        MapLayer_YourPosition_options = {
+
+    /***********************************************************
+    BsMarker_YourPosition
+    Extending BsMarkerCircle with methods to set follow on/off
+    ***********************************************************/
+    var BsMarker_YourPosition = L.BsMarkerCircle.extend({
+
+        niels: function(){
+
+        }
+
+    });
+
+
+    /***********************************************************
+    MapLayer_YourPosition_options
+    ***********************************************************/
+    var MapLayer_YourPosition_options = {
             text     : header_text,
 
-            legendOptions: {
+            __legendOptions: {
                 showContent: false,
                 showIcons  : false,
                 onWarning: showGeolocationWarning,
             },
 
             layerOptions: {
-                size          : 'sm',
+                constructor : BsMarker_YourPosition,
+                size           : 'sm',
                 markerClassName: 'show-for-geolocation',
-                innerIconClass: 'fas fa-sort-up show-for-geolocation-direction',
-                scaleInner    : 200,
+                innerIconClass : 'fas fa-sort-up show-for-geolocation-direction',
+                scaleInner     : 200,
 
                 colorName: 'standard',//<== MANGLER skal defineres i fcoo-maps-color
 
+                buttonList: [{
+                    //Follow-buttons
+                    type    : 'standardcheckboxbutton',
+                    text    : {da: 'Følg', en: 'Follow'},
+                    selected: false,
+//HER                    onChange: function(id, selected, _this){
+//HER//HER                        console.log('Følg', arguments);
+//HER                    }
+                }],
+                inclCenterButton: true,
+
+                popupContent        : ['latLng',             'altitude',          'velocity'],
+                popupExtendedContent: ['latLng', 'accuracy', 'altitude_accuracy', 'velocity_extended'],
+                extendedPopupWidth  : 180,
+                legendContent       : ['latLng', 'accuracy', 'altitude_accuracy', 'velocity_extended'],
+
+
+
+
                 latLng: L.latLng(55, 12),
 
-                popupContent        : ['latLng', 'velocity'],
-                extendedPopupWidth  : 180,
-                popupExtendedContent: ['latLng', 'accuracy', 'altitude', 'altitudeAccuracy', 'speed', 'velocity'],
-                legendContent       : ['latLng', 'accuracy', 'altitude', 'altitudeAccuracy', 'speed', 'velocity'],
+                accuracy        : null,
+                speed           : null,
+                direction       : null,
+                altitude        : null,
+                altitudeAccuracy: null,
+
+
             }
 
 
 
         };
 
-    //createMapLayer = {MAPLAYER_ID: CREATE_MAPLAYER_AND_MENU_FUNCTION} See fcoo-maps/src/map-layer_00.js for description
-    nsMap.createMapLayer = nsMap.createMapLayer || {};
 
     /***********************************************************
     MapLayer_YourPosition
@@ -74,19 +113,77 @@
     ***********************************************************/
     function MapLayer_YourPosition(options) {
 
+/*
+        var s = ns.appSetting.add({
+            id          : options.id,
+            callApply   : true,
+            applyFunc   : function(){
+                //$.proxy(this.applySetting, this)
+            },
+            defaultValue: {niels:'holt'}
+        });
+
+*/
+        var _this = this;
+        options.layerOptions.buttonList = [{
+            //Follow-buttons
+            type: 'standardcheckboxbutton',
+
+class: 'NIELS',
+            text: {da: 'Følg', en:  'Follow'},
+            selected: false,
+            onChange: this._setFollowFromCheckbocButton,
+            context : _this
+        }];
+
+
         nsMap.MapLayer_Marker.call(this, options);
     }
-    nsMap.MapLayer_YourPosition = MapLayer_YourPosition;
 
+    nsMap.MapLayer_YourPosition = MapLayer_YourPosition;
     MapLayer_YourPosition.prototype = Object.create(nsMap.MapLayer_Marker.prototype);
 
     MapLayer_YourPosition.prototype = $.extend({}, nsMap.MapLayer_Marker.prototype, {
 
+        _setFollowFromCheckbocButton: function(id, selected, $button, map){
+            this.setFollow(map.fcooMapIndex, selected);
+        },
+/*
+        setFollow: function( mapIndex, on){
+//HER            console.log('setFollow', mapIndex, on, this.info);
+
+            this._saveSetting();
+        },
+*/
+
         /*****************************************************
-        _onAdd - Extend to add this as geolocation-handler
+        applySetting - Apply setting for follow on map
         *****************************************************/
-        _onAdd: function (_onAdd) {
-            return function (/*map, marker*/) {
+/*
+        applySetting: function(setting, map, mapInfo, mapIndex){
+
+//HER            console.log('applySetting', mapIndex, setting, mapInfo);
+
+        },
+
+        saveSetting: function(map, mapInfo, mapIndex){
+
+//HER            console.log('saveSetting', map, mapInfo, mapIndex);
+
+            return {
+                odd: !!(mapIndex % 2),
+                NR: mapIndex
+            };
+        },
+
+*/
+
+        /*****************************************************
+        addTo - Extend to add this as geolocation-handler
+        *****************************************************/
+        addTo: function (addTo) {
+            return function () {
+
                 //Add the map-layer as handler for default geolocation-provider
                 if (!this.glh_id){
 
@@ -98,40 +195,10 @@
                     window.geolocation.provider.add( this );
                 }
 
-                return _onAdd.apply(this, arguments);
+                return addTo.apply(this, arguments);
             };
-        } (nsMap.MapLayer_Marker.prototype._onAdd),
+        } (nsMap.MapLayer_Marker.prototype.addTo),
 
-
-
-        /*****************************************************
-        getPopupContent(id, value, extended)
-        Returns the bsModal-content options for options-id = id
-        This methods must be set for different versions of MapMarker
-        *****************************************************/
-        getPopupContent: function(id, value, extended){
-            if (typeof this.geolocationAllowed != 'boolean')
-                return [];
-
-            if (id == 'info')
-                return this.geolocationAllowed ? [] : {
-                    type: 'textbox',
-                    text: {
-                        da: 'Din placering kan ikke vises.<br>Det kan skyldes, at<br><ul>' +
-                                '<li>Første grund kdjldfj lsd jlsd  lsdkfj sldfkj sdlfk j</li>' +
-                                '<li>ANden grund dsfglj lsdj lsdj l sdflk lldskfjg ksd flgk sdlfk </li>' +
-                            '</ul>',
-
-                        en: 'Your location can\'t be displayed.<br>Possible reasons:<br><ul>' +
-                                '<li>First reason</li>' +
-                                '<li>Second reason</li>' +
-                            '</ul>'
-                    }
-                };
-            else
-                return this.geolocationAllowed ? this.getStandardPopupContent(id, value, extended) : [];
-
-        },
 
         /*****************************************************
         setCoords
@@ -146,7 +213,7 @@
         Called by the associated GeolocationProvider when an error occur
         *****************************************************/
         onGeolocationError: function( error, coords ){
-            //console.log('onGeolocationError', error, coords );
+//HER            console.log('onGeolocationError', error, coords );
             this._updateOnGeolocation(coords);
         },
 
@@ -157,6 +224,7 @@
             this.geolocationAllowed = !!coords.latLng;
 
             this.updateMarker( coords );
+            this.setDataset( coords );
 
             if (this.geolocationAllowed){
                 this.setLatLng( coords.latLng );
@@ -183,7 +251,16 @@
                 showGeolocationWarning();
                 this.geolocationWarningShown = true;
             }
+        },
+
+
+        /*****************************************************
+        follow
+        *****************************************************/
+        follow: function(){
+
         }
+
 
     });
 
@@ -191,6 +268,9 @@
     /***********************************************************
     Add MapLayer_YourPosition to createMapLayer
     ***********************************************************/
+    //createMapLayer = {MAPLAYER_ID: CREATE_MAPLAYER_AND_MENU_FUNCTION} See fcoo-maps/src/map-layer_00.js for description
+    nsMap.createMapLayer = nsMap.createMapLayer || {};
+
     var id = "YOUR_POSITION";
     nsMap.createMapLayer[id] = function(options, addMenu){
         var mapLayer = nsMap._addMapLayer(id, nsMap.MapLayer_YourPosition, MapLayer_YourPosition_options );
