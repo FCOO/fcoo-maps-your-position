@@ -15,6 +15,12 @@
         nsMap = ns.map = ns.map || {};
 
     var header_text = {da:'Din placering', en:'Your position'};
+
+    //State for Your Position
+    var yp_init  = 'INIT',
+        yp_allow = 'ALLOW',
+        yp_error = 'ERROR';
+
     function showGeolocationWarning(){
         window.notyInfo({
             da: 'Din placering kan ikke vises. Det kan skyldes at,<br><ul>' +
@@ -24,8 +30,9 @@
                 '</ul>',
 
             en: 'Your location can\'t be displayed. Possible reasons:<br><ul>' +
-                   '<li>First reason</li>' +
-                    '<li>Second reason</li>' +
+                    '<li>The page don\'t allow showing of location</li>' +
+                    '<li>Your device can\'t determine the location</li>' +
+                    '<li>The page isn\'t accessed via <em>https</em></li>' +
                 '</ul>'
         }, {
             header   : header_text,
@@ -36,6 +43,9 @@
         });
 
     }
+
+    //TEST_MODE = Only under development
+    var TEST_MODE = false;
 
 
     /***********************************************************
@@ -62,14 +72,18 @@
                 inclCenterButton: true,
 
                 popupContent        : ['latLng',             'altitude',          'velocity'],
+                popupWidth          : '10em',
+
                 popupExtendedContent: ['latLng', 'accuracy', 'altitude_accuracy', 'velocity_extended'],
                 extendedPopupWidth  : 180,
 
+                popupMinimizedContent: true,
+
                 legendContent       : ['latLng', 'accuracy', 'altitude_accuracy', 'velocity_extended'],
 
+                contextmenu: true,
 
-                latLng: L.latLng(55, 12),
-
+                latLng          : L.latLng(55, 12),
                 accuracy        : null,
                 speed           : null,
                 direction       : null,
@@ -90,12 +104,15 @@
             type     : 'standardcheckboxbutton',
             text     : {da: 'Følg', en: 'Follow'},
             class    : 'min-width your-position-follow-btn',
-            selected : false,
+            selected : this._getFollowSelected.bind(this),
             onChange : this._followButton_onChange,
             context  : _this
         }];
 
-        options.onAdd = this.onAdd.bind(this);
+        this.state = yp_init;
+
+        options.onAdd    = this.onAdd.bind(this);
+        options.onRemove = this.onRemove.bind(this);
 
         options.layerOptions.popupOptions = {
             onOpen       : _this._popup_onOpen,
@@ -113,23 +130,33 @@
         onAdd - Add this as geolocation-handler
         *****************************************************/
         onAdd: function(map/*, layer*/){
-
-            if (this.glh_id)
-                //Update with newest data
-                this._updateCoords( this.dataset.data, map.fcooMapIndex );
+            if (this.glh_id){
+                if (this.state == yp_allow)
+                    //Update with newest data
+                    this._updateCoords( this.dataset.data, map.fcooMapIndex );
+                else
+                    this._updateState();
+            }
             else {
+                //Hide marker while waiting for accept or denial
+                this._updateState();
+
                 //Add the map-layer as handler for default geolocation-provider
-
-                //Hide marker whle waiting for accept or denial
-                window.modernizrToggle( 'geolocation', false );
-
                 $.workingOn();
                 this.workingOn = true;
                 window.geolocation.provider.add( this );
             }
+        },
 
-            //MANGLER - set follow
+        /*****************************************************
+        onRemove - Force follow = false
+        *****************************************************/
+        onRemove: function(map/*, layer*/){
+            var mapIndex = nsMap.getMap(map).fcooMapIndex,
+                mapInfo  = this.info[mapIndex];
 
+            mapInfo.follow = false;
+            this.saveSetting(map, mapInfo);
         },
 
         /*****************************************************
@@ -137,6 +164,8 @@
         Called by the associated GeolocationProvider when the coordinates changeds
         *****************************************************/
         setCoords: function( coords ){
+            this.state = yp_allow;
+
             this._updateCoords(coords);
             this.firstCoordsReady = true;
         },
@@ -146,57 +175,83 @@
         Called by the associated GeolocationProvider when an error occur
         *****************************************************/
         onGeolocationError: function( error, coords ){
+            this.state = yp_error;
             this._updateCoords(coords);
+            this.closePopup();
+        },
+
+        /*****************************************************
+        _getFollowSelected
+        *****************************************************/
+        _getFollowSelected(){
+            if (L.currentPopup_map){
+                var mapIndex = nsMap.getMap(L.currentPopup_map).fcooMapIndex;
+                return this.info[mapIndex].follow;
+            }
+            return false;
+        },
+
+        /*****************************************************
+        _updateState
+        *****************************************************/
+        _updateState(){
+            var allowed = this.state == yp_allow;
+
+            window.modernizrToggle( 'geolocation', allowed );
+            this.callAllLegends(allowed ? 'setStateNormal' : 'setStateHidden');
+
+            this.callAllLegends(this.state == yp_error ? 'showIcon' : 'hideIcon', ['warning']);
+
+            //Update legend
+            if (this.state == yp_error)
+                this.hideLegendContent( false );
+            else
+                if (allowed)
+                    this.showLegendContent();
         },
 
         /*****************************************************
         _updateCoords
         *****************************************************/
         _updateCoords(coords, onlyIndexOrMapId){
-            this.geolocationAllowed = !!coords.latLng;
+            var allowed = (this.state == yp_allow) && !!coords.latLng;
 
             if (!coords.speed || (coords.speed < .1)){  //<= MANGLER .1 skal checkes/besluttes ift. min-hastighed
-                coords.speed   = null;
-                coords.heading = null;
+                coords.speed   = TEST_MODE ? 12.34 : null;
+                coords.heading = TEST_MODE ? Math.random()*360   : null;
             }
             coords.direction = coords.heading;
 
-/* TEST: Imitating moving computer...
-if (!this.niels){
 
-    var _this = this,
-        _latLng = L.latLng(coords.latLng);;
+            // In test-mode: Imitating moving computer...
+            if (allowed && TEST_MODE && !this.TEST_MODE_MOVING){
+                    var __this = this,
+                    _latLng = L.latLng(coords.latLng);
+                    _latLng.lng = _latLng.lng + .2;
 
-    _latLng.lng = _latLng.lng + .2;
+                    this.TEST_MODE_MOVING = true;
+                    setTimeout( function(){
+                        __this.TEST_MODE_MOVING = false;
+                        __this._updateCoords( {latLng: _latLng});
+                    }, 2000);
+                }
+            //End of test-mode
 
-    this.niels = true;
-    setTimeout( function(){
-        _this.niels = false;
-        _this.setCoords( {latLng: _latLng});
-    }, 2000);
-}
-*/
-            this.updateMarker( coords, onlyIndexOrMapId );
-            if (this.geolocationAllowed)
+            if (allowed){
+                this.updateMarker( coords, onlyIndexOrMapId );
                 this.setLatLng( coords.latLng, onlyIndexOrMapId );
+            }
 
             //Modernizr-classes
-            window.modernizrToggle( 'geolocation', this.geolocationAllowed );
-            window.modernizrToggle( 'geolocation-direction', this.geolocationAllowed && (coords.direction !== null));
-            this.callAllLegends(this.geolocationAllowed ? 'setStateNormal' : 'setStateHidden');
-            this.callAllLegends(this.geolocationAllowed ? 'hideIcon' : 'showIcon', ['warning']);
-
-            if (this.geolocationAllowed)
-                this.showLegendContent( true );
-            else
-                this.hideLegendContent( false );
+            this._updateState();
+            window.modernizrToggle( 'geolocation-direction', allowed && (coords.direction !== null));
 
             if (this.workingOn){
                 this.workingOn = false;
                 $.workingOff();
             }
 
-            if (!this.geolocationAllowed && !this.geolocationWarningShown){
+            if (!allowed && !this.geolocationWarningShown){
                 showGeolocationWarning();
                 this.geolocationWarningShown = true;
             }
@@ -206,10 +261,11 @@ if (!this.niels){
                 firstCoordsReady = this.firstCoordsReady;
             this.firstCoordsReady = false;
 
-            $.each( this._getAllInfoChild(), function(index, mapInfo){
-                if (mapInfo.follow)
-                    _this.setCenter(mapInfo.map);
-            });
+            if (allowed)
+                $.each( this._getAllInfoChild(), function(index, mapInfo){
+                    if (mapInfo.follow)
+                        _this.setCenter(mapInfo.map);
+                });
 
             this.firstCoordsReady = this.firstCoordsReady || firstCoordsReady;
         },
@@ -285,7 +341,8 @@ if (!this.niels){
 
         _check_if_follow_need_to_stop: function(event){
             var map = event.target;
-            if (this.firstCoordsReady && map && !map.getCenter().equals(this.dataset.data.latLng))
+
+            if ((this.state == yp_allow) && this.firstCoordsReady && map && !map.getCenter().equals(this.dataset.data.latLng))
                 this.setFollow( this.info[ map.fcooMapIndex ], false );
         }
     });
