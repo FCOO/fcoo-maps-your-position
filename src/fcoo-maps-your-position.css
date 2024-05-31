@@ -9,13 +9,17 @@
 
 ************************************************/
 .geolocation .hide-for-geolocation {
-  display: none !important; }
+  display: none !important;
+}
 
 .no-geolocation .show-for-geolocation {
-  display: none !important; }
+  display: none !important;
+}
 
 .geolocation-direction .hide-for-geolocation-direction {
-  display: none !important; }
+  display: none !important;
+}
 
 .no-geolocation-direction .show-for-geolocation-direction {
-  display: none !important; }
+  display: none !important;
+}
